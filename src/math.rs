@@ -45,7 +45,7 @@ impl Vec3 {
   }
 }
 
-type Point3 = Vec3;
+pub type Point3 = Vec3;
 
 // for printing
 impl std::fmt::Debug for Vec3 {
