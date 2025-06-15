@@ -14,7 +14,10 @@ const VIEWPORT_HEIGHT: f64 = 2.0;
 const FOCAL_LENGTH: f64 = 1.0;
 
 fn ray_color(ray: &Ray) -> Color {
-  Color::Rgb(Vec3::new(0.0, 0.0, 0.0))
+  let unit_direction = ray.dir.unit();
+  let a = 0.5 * (unit_direction.y + 1.0);
+  let lerp = (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(1.0, 0.5, 0.7);
+  Color::Rgb(lerp)
 }
 
 fn main() {
