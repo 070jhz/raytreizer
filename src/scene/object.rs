@@ -1,0 +1,168 @@
+use crate::Vec3;
+use crate::Point3;
+use crate::Ray;
+
+const EPSILON: f64 = 1e-8;
+
+pub struct HitRecord {
+  pub t: f64,
+  pub point: Point3,
+  pub normal: Vec3,
+}
+
+pub trait Hittable {
+  fn hit(&self, ray: &Ray) -> Option<HitRecord>;
+}
+
+// Object enum and variants
+
+pub enum Object {
+  Sphere(Sphere),
+  Plane(Plane),
+  Cylinder(Cylinder),
+}
+
+pub struct Sphere {
+  pub center: Point3,
+  pub radius: f64,
+}
+
+pub struct Plane {
+  pub anchor: Point3,
+  pub normal: Vec3,
+}
+
+pub struct Cylinder {
+  pub center      : Point3,
+  pub radius      : f64,
+  pub height      : f64,
+  pub orientation : Vec3,
+}
+
+// intersection implementations
+
+impl Hittable for Object {
+  fn hit(&self, ray: &Ray) -> Option<HitRecord> {
+    match self {
+      Object::Sphere(s)   => s.hit(ray),
+      Object::Plane(p)    => p.hit(ray),
+      Object::Cylinder(c) => c.hit(ray),
+    }
+  }
+}
+
+impl Hittable for Sphere {
+  fn hit(&self, ray: &Ray) -> Option<HitRecord> {
+    // direction, origin and vector from ray to center
+    let oc        = self.center - ray.o;
+    let dir         = ray.dir;
+    
+    // quadratic coefficients and discriminant
+    let a = dir.dot(&dir);
+    let b = -2.0 * dir.dot(&oc);
+    let c = oc.dot(&oc) - self.radius * self.radius;
+    let d = b*b - 4.0*a*c;
+
+    if d < 0.0 {
+      return None;
+    }
+
+    let d_sqrt = d.sqrt();
+    let t1 = (-b - d_sqrt) / (2.0 * a);
+    
+    // return early when the closest root is in front of the camera
+    if t1 >= EPSILON {
+      let point: Point3 = ray.at(t1);
+      let normal = ((point - self.center) / self.radius).unit();
+
+      return Some(HitRecord { t: t1, point, normal });
+    }
+
+    // if d == 0.0 equation yields the same root twice
+    let t2 = (-b + d_sqrt) / (2.0 * a);
+    // check the second root
+    if t2 >= EPSILON {
+      let point : Point3 = ray.at(t2);
+      let normal = ((point - self.center) / self.radius).unit();
+
+      return Some(HitRecord { t: t2, point, normal });
+    }
+
+    None
+  }
+
+}
+
+impl Hittable for Plane {
+  fn hit(&self, ray: &Ray) -> Option<HitRecord> {
+    let denominator = ray.dir.dot(&self.normal);
+    
+    if denominator.abs() < EPSILON {
+      // ray is parallel to the plane
+      return None;
+    }
+
+    let t = (self.anchor - ray.o).dot(&self.normal) / denominator;
+    if t < EPSILON {
+      return None;
+    } else {
+      let point : Point3 = ray.at(t);
+
+      Some(HitRecord { t, point, normal: self.normal })
+    }
+  }
+}
+
+impl Hittable for Cylinder {
+  fn hit(&self, ray: &Ray) -> Option<HitRecord> {
+    // to factor out orientation and position of the cylinder,
+    // we use projection math to determine whether the ray intersects 
+    let oc  = ray.o - self.center;
+    let dir = ray.dir;
+    let v   = self.orientation;
+    
+    // ray direction component perpendicular to cylinder axis (transverse direction)
+    let n = dir - dir.dot(&v) * v;
+    // oc component perpendicular to cylinder axis (radial offset)
+    let m = oc - oc.dot(&v) * v;
+
+    // quadratic coefficients and discriminant
+    let a = n.dot(&n);
+    let b = 2.0 * n.dot(&m);
+    let c = m.dot(&m) - self.radius * self.radius;
+    let d = b*b - 4.0*a*c;
+    
+    if d < 0.0 {
+      return None;
+    }
+    
+    let d_sqrt = d.sqrt();
+    let t1 = - (b + d_sqrt) / (2.0 * a);
+    if t1 >= EPSILON {
+      let point: Point3 = ray.at(t1);
+      let h    : f64 = (point - self.center).dot(&v); 
+      // check if height of intersection point is between the caps
+      if h <= self.height && h >= 0.0 {
+        let axis_point: Point3 = self.center + h * v;
+        let normal    : Vec3 = (axis_point - point).unit();
+
+        return Some(HitRecord { t: t1, point, normal } );
+      }
+    }
+
+    let t2 = (-b + d_sqrt) / (2.0 * a);
+    if t2 >= EPSILON {
+      let point: Point3 = ray.at(t2);
+      let h    : f64 = (point - self.center).dot(&v);
+      
+      if h <= self.height && h >= 0.0 {
+        let axis_point: Point3 = self.center + h * v;
+        let normal    : Vec3 = (axis_point - point).unit();
+
+        return Some(HitRecord { t: t2, point, normal })
+      }
+    }
+
+    None
+  }
+}
