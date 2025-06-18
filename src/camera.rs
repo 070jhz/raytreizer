@@ -1,18 +1,17 @@
 use crate::Point3;
 use crate::Vec3;
 
+#[derive(Clone)]
 pub struct Viewport {
   pub u       : Vec3,
   pub v       : Vec3,
   pub origin  : Point3, // top-left corner
-  pub width   : f64,    // derived from aspect ratio
-  pub height  : f64,    // derived from fov
 }
 
+#[derive(Clone)]
 pub struct Camera {
   pub position        : Point3,
   pub focal_length    : f64,
-  pub fov_degrees     : f64,    // vertical field of view
   pub viewport        : Viewport,
 }
 
@@ -36,14 +35,11 @@ impl Camera {
       u: viewport_u,
       v: viewport_v,
       origin: viewport_top_left,
-      width: viewport_width,
-      height: viewport_height,
     };
 
     Camera {
       position,
       focal_length : 1.0,
-      fov_degrees,
       viewport,
     }
   }
