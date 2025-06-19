@@ -1,3 +1,5 @@
+use std::f64;
+
 use crate::Vec3;
 use crate::Point3;
 use crate::Ray;
@@ -58,17 +60,17 @@ impl Hittable for Sphere {
     let dir         = ray.dir;
     
     // quadratic coefficients and discriminant
-    let a = dir.dot(&dir);
-    let b = -2.0 * dir.dot(&oc);
+    let a = dir.length_squared();
+    let h = dir.dot(&oc);
     let c = oc.dot(&oc) - self.radius * self.radius;
-    let d = b*b - 4.0*a*c;
+    let d = h*h - a*c;
 
     if d < 0.0 {
       return None;
     }
 
     let d_sqrt = d.sqrt();
-    let t1 = (-b - d_sqrt) / (2.0 * a);
+    let t1 = (h - d_sqrt) / a;
     
     // return early when the closest root is in front of the camera
     if t1 >= EPSILON {
@@ -79,7 +81,7 @@ impl Hittable for Sphere {
     }
 
     // if d == 0.0 equation yields the same root twice
-    let t2 = (-b + d_sqrt) / (2.0 * a);
+    let t2 = (h + d_sqrt) / a;
     // check the second root
     if t2 >= EPSILON {
       let point : Point3 = ray.at(t2);
@@ -125,44 +127,70 @@ impl Hittable for Cylinder {
     let n = dir - dir.dot(&v) * v;
     // oc component perpendicular to cylinder axis (radial offset)
     let m = oc - oc.dot(&v) * v;
+    
+    let mut closest_hit: Option<HitRecord> = None;
+    let mut closest_t = f64::INFINITY;
 
-    // quadratic coefficients and discriminant
-    let a = n.dot(&n);
-    let b = 2.0 * n.dot(&m);
+    // reduced coefficients and discriminant
+    let a = n.length_squared();
+    if a <= EPSILON {
+      return None; // ray is parallel to cylinder axis -> no side intersection
+    }
+
+    let h = n.dot(&m);
     let c = m.dot(&m) - self.radius * self.radius;
-    let d = b*b - 4.0*a*c;
+    let d = h*h - a*c;
     
     if d < 0.0 {
       return None;
     }
     
     let d_sqrt = d.sqrt();
-    let t1 = - (b + d_sqrt) / (2.0 * a);
-    if t1 >= EPSILON {
-      let point: Point3 = ray.at(t1);
-      let h    : f64 = (point - self.center).dot(&v); 
-      // check if height of intersection point is between the caps
-      if h <= self.height && h >= 0.0 {
-        let axis_point: Point3 = self.center + h * v;
-        let normal    : Vec3 = (axis_point - point).unit();
+    
+    for t in [(-h - d_sqrt) / a, (-h + d_sqrt) / a] {
+      if t >= EPSILON {
+        let point = ray.at(t);
+        let height = (point - self.center).dot(&v);
 
-        return Some(HitRecord { t: t1, point, normal } );
+        if height >= 0.0 && height <= self.height {
+          let axis_point = self.center + height * v;
+          let normal = (point - axis_point).unit();
+
+          if t < closest_t {
+            closest_t = t;
+            closest_hit = Some(HitRecord { t, point, normal })
+          }
+        }
       }
     }
 
-    let t2 = (-b + d_sqrt) / (2.0 * a);
-    if t2 >= EPSILON {
-      let point: Point3 = ray.at(t2);
-      let h    : f64 = (point - self.center).dot(&v);
-      
-      if h <= self.height && h >= 0.0 {
-        let axis_point: Point3 = self.center + h * v;
-        let normal    : Vec3 = (axis_point - point).unit();
+    // check cylinder caps
+    let top = Plane {
+      anchor: self.center + self.height * v,
+      normal: v,
+    };
 
-        return Some(HitRecord { t: t2, point, normal })
+    let bottom = Plane {
+      anchor: self.center,
+      normal: -v,
+    };
+
+    
+    for plane in &[bottom, top] {
+      if let Some(hit) = plane.hit(ray) {
+        let dist2 = (hit.point - plane.anchor).length_squared();
+        if dist2 <= self.radius * self.radius && hit.t < closest_t {
+          closest_t   = hit.t;
+          closest_hit = Some(HitRecord {
+            t      : hit.t,
+            point  : hit.point,
+            normal : plane.normal,
+          }); 
+        }
       }
     }
 
-    None
+    closest_hit
+
   }
 }
