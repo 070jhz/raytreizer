@@ -16,8 +16,9 @@ const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const WIDTH: usize = 1280;
 
 fn ray_color(ray: &Ray, scene: &Scene) -> Color {
-  if let Some(_) = scene.hit(ray) {
-    return Color::rgb(1.0, 0.0, 0.0); 
+  if let Some(hit) = scene.hit(ray) {
+    let n = hit.normal;
+    return Color::rgb((n.x + 1.0) / 2.0, (n.y + 1.0) / 2.0, (n.z + 1.0) / 2.0);
   }
   let unit_direction = ray.dir.unit();
   let a = 0.5 * (unit_direction.y + 1.0);
@@ -67,21 +68,20 @@ fn main() {
   });
   window.set_target_fps(60);
   
-  // scene setup
-  let test = Object::Sphere(Sphere { 
-    center: Point3::new(-0.5, 0.0, -1.0),
-    radius: 0.25 
-  });
-  
-  let test2 = Object::Cylinder(Cylinder { 
-    center: Point3::new(2.0, 1.5, -10.0),
-    radius: 0.5,
-    height: 3.0,
-    orientation: Vec3::new(0.0, -1.0, 0.0), // normalize this 
-  });
+  let sp = Sphere {
+    center: Point3::new(0.25, 0.0, -1.0),
+    radius: 0.125,
+  };
 
-  scene.add_object(test);
-  scene.add_object(test2);
+  let cyl = Cylinder {
+    center: Point3::new(0.0, 0.0, -5.0),
+    radius: 0.25,
+    height: 1.0,
+    orientation: Vec3::new(0.0, -0.5, 1.0).unit(),
+  };
+
+  scene.add_object(Object::Sphere(sp));
+  scene.add_object(Object::Cylinder(cyl));
 
   while window.is_open() && !window.is_key_down(Key::Escape) {
     for (i,p) in buffer.iter_mut().enumerate() {
