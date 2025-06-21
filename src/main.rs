@@ -3,6 +3,7 @@ mod color;
 mod ray;
 mod camera;
 mod scene;
+mod framebuffer;
 
 use minifb::{Key, Window, WindowOptions};
 use crate::math::Vec3;
@@ -66,7 +67,7 @@ fn main() {
  
   while window.is_open() && !window.is_key_down(Key::Escape) {
     let buffer = scene.render_frame();
-    window.update_with_buffer(&buffer, camera.image_width, camera.image_height).unwrap();
+    window.update_with_buffer(&buffer.buf, camera.image_width, camera.image_height).unwrap();
   }
 }
 
