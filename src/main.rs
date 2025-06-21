@@ -65,7 +65,7 @@ fn main() {
   
  
   while window.is_open() && !window.is_key_down(Key::Escape) {
-    let buffer = camera.render_frame(&scene);
+    let buffer = scene.render_frame();
     window.update_with_buffer(&buffer, camera.image_width, camera.image_height).unwrap();
   }
 }

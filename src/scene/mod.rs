@@ -2,10 +2,11 @@ use crate::Color;
 use crate::Camera;
 use crate::Ray;
 use crate::scene::object::{ Object, HitRecord, Hittable };
+use crate::math::Vec3;
 
 pub mod light;
 pub mod object;
-pub mod parser;
+//pub mod parser;
 
 pub struct AmbientLight {
   pub ratio: f64,
@@ -39,6 +40,20 @@ impl Scene {
     //self.lights.clear();
   }
 
+  pub fn render_frame(&self) -> Vec<u32> {
+    let mut buffer: Vec<u32> = vec![0; self.camera.image_width * self.camera.image_height];
+    for (i,p) in buffer.iter_mut().enumerate() {
+      let pixel = self.camera.viewport.p00 
+                + ((i % self.camera.image_width) as f64) * self.camera.viewport.pdu
+                + ((i / self.camera.image_width) as f64) * self.camera.viewport.pdv;
+      let ray = Ray::new(self.camera.position, (pixel - self.camera.position).unit());
+
+      *p = Self::ray_color(&self, &ray).to_rgb_bytes();
+
+    }
+    buffer
+  }
+  
   pub fn hit(&self,ray: &Ray) -> Option<HitRecord> {
     let mut closest   : Option<HitRecord> = None;
     let mut closest_t = f64::INFINITY;
@@ -54,4 +69,16 @@ impl Scene {
 
     closest
   }
+
+  fn ray_color(&self, ray: &Ray) -> Color {
+    if let Some(hit) = self.hit(ray) {
+      let n = hit.normal;
+      return Color::rgb((n.x + 1.0) / 2.0, (n.y + 1.0) / 2.0, (n.z + 1.0) / 2.0);
+    }
+    let unit_direction = ray.dir.unit();
+    let a = 0.5 * (unit_direction.y + 1.0);
+    let lerp = (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.3, 0.5, 1.0);
+    Color::Rgb(lerp)
+  }
+
 }
