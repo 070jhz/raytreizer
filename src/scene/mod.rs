@@ -55,7 +55,7 @@ impl Scene {
                     + (i as f64 + random_double_in(-0.5, 0.5)) * self.camera.viewport.pdu
                     + (j as f64 + random_double_in(-0.5, 0.5)) * self.camera.viewport.pdv;
           let ray = Ray::new(self.camera.position, (pixel - self.camera.position).unit());
-          pixel_color += self.ray_color(&ray);
+          pixel_color += self.ray_color(&ray, self.camera.max_depth);
         }
 
         buffer[(i, j)] = Color::Rgb(pixel_color / (self.camera.sampling_rate as f64)).to_rgb_bytes();
@@ -80,10 +80,16 @@ impl Scene {
     closest
   }
 
-  fn ray_color(&self, ray: &Ray) -> Vec3 {
+  fn ray_color(&self, ray: &Ray, depth: u32) -> Vec3 {
+    if depth == 0 {
+      return Vec3::zero();
+    }
+
     if let Some(hit) = self.cast(ray) {
-      let n = hit.normal;
-      return Vec3::new((n.x + 1.0) / 2.0, (n.y + 1.0) / 2.0, (n.z + 1.0) / 2.0);
+      match hit.material.scatter(ray, &hit) {
+        Some((scattered_ray, albedo)) => return Vec3::from(albedo) * self.ray_color(&scattered_ray, depth - 1),
+        None => return Vec3::zero()
+      }
     }
     let unit_direction = ray.dir.unit();
     let a = 0.5 * (unit_direction.y + 1.0);
