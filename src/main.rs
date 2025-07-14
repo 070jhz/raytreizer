@@ -5,7 +5,8 @@ mod camera;
 mod scene;
 mod framebuffer;
 mod utils;
-mod material;
+
+use std::sync::Arc;
 
 use minifb::{Key, Window, WindowOptions};
 use crate::math::Vec3;
@@ -14,6 +15,8 @@ use crate::math::Point3;
 use crate::ray::Ray;
 use crate::camera::Camera;
 use crate::scene::{ Scene, AmbientLight, object::{ Object, Sphere, Cylinder, Plane } };
+
+use self::scene::material::Solid;
 
 fn main() {
   let mut scene = Scene::new(
@@ -32,11 +35,21 @@ fn main() {
   let sp = Sphere {
     center: Point3::new(0.0, 0.0, -1.0),
     radius: 0.25,
+    material: Arc::new( 
+      Solid {
+        albedo: Color::rgb(0.8, 0.3, 0.3),
+      }
+    ),
   };
 
   let sp2 = Sphere {
     center: Point3::new(0.0, -20.25, -5.0),
     radius: 20.0,
+    material: Arc::new(
+      Solid {
+        albedo: Color::rgb(0.1, 0.7, 0.2),
+      }
+    ), 
   };
 
   let cyl = Cylinder {
@@ -44,6 +57,21 @@ fn main() {
     radius: 0.125,
     height: 0.5,
     orientation: Vec3::new(1.0, 1.0, 0.25).unit(),
+    top_material: Arc::new(
+      Solid {
+        albedo: Color::rgb(0.3, 0.2, 0.8),
+      }
+    ),
+    bottom_material: Arc::new(
+      Solid {
+        albedo: Color::rgb(0.8, 0.4, 0.5),
+      }
+    ),
+    body_material: Arc::new(
+      Solid {
+        albedo: Color::rgb(0.5, 0.5, 0.5),
+      }
+    ),
   };
 
   //scene.add_object(Object::Sphere(sp));
