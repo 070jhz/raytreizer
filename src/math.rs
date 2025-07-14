@@ -1,8 +1,8 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::utils::random_double_in;
+use crate::{color::Color, utils::random_double_in};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Vec3 {
   pub x: f64,
   pub y: f64,
@@ -62,6 +62,15 @@ impl Vec3 {
 }
 
 pub type Point3 = Vec3;
+
+impl From<Color> for Vec3 {
+  fn from(value: Color) -> Self {
+      match value {
+      Color::Rgb(v) => v,
+      Color::Argb(a, v) => Vec3::new(v.x * a, v.y * a, v.z * a),
+    }
+  }
+}
 
 // for printing
 impl std::fmt::Debug for Vec3 {
@@ -220,4 +229,3 @@ impl DivAssign<f64> for Vec3 {
     *self *= 1.0 / scalar
   }
 }
-
