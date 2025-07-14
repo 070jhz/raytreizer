@@ -17,7 +17,7 @@ impl Color {
   pub fn argb(a: f64, r: f64, g: f64, b:f64) -> Self {
     Color::Argb(a, Vec3::new(r, g, b))
   }
-  
+
   // top byte is ignored because alpha blending isnt supported by minifb
   pub fn to_rgb_bytes(&self) -> u32 {
     match *self {
@@ -46,6 +46,25 @@ impl Color {
     match *self {
       Color::Rgb(_) => 1.0,
       Color::Argb(a, _) => a,
+    }
+  }
+  
+  pub fn gamma_correct(&self, gamma: f64) -> Color {
+    match *self {
+      Color::Rgb(v) => 
+        Color::rgb(
+          v.x.powf(1.0 / gamma),
+          v.y.powf(1.0 / gamma),
+          v.z.powf(1.0 / gamma),
+        ),
+
+      Color::Argb(a, v) => 
+        Color::argb(
+          a,
+          v.x.powf(1.0 / gamma),
+          v.y.powf(1.0 / gamma),
+          v.z.powf(1.0 / gamma),
+        ),
     }
   }
 }
