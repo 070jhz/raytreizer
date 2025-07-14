@@ -93,7 +93,7 @@ impl Scene {
     }
     let unit_direction = ray.dir.unit();
     let a = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.3, 0.5, 1.0)
+    (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(1.0, 0.0, 0.0)
   }
 
 }

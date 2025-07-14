@@ -15,7 +15,7 @@ impl Material for Solid {
       self.albedo
   }
   fn scatter(&self, _ray: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
-    let mut scatter_dir = Vec3::random_unit_sphere();
+    let mut scatter_dir = rec.normal + Vec3::random_unit_sphere();
     
     if scatter_dir.dot(&rec.normal) < 0.0 {
       scatter_dir = -scatter_dir;
