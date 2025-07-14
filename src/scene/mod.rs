@@ -58,7 +58,7 @@ impl Scene {
           pixel_color += self.ray_color(&ray, self.camera.max_depth);
         }
 
-        buffer[(i, j)] = Color::Rgb(pixel_color / (self.camera.sampling_rate as f64)).to_rgb_bytes();
+        buffer[(i, j)] = Color::Rgb(pixel_color / (self.camera.sampling_rate as f64)).gamma_correct(2.0).to_rgb_bytes();
       }
     }
     buffer
@@ -93,7 +93,7 @@ impl Scene {
     }
     let unit_direction = ray.dir.unit();
     let a = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(1.0, 0.0, 0.0)
+    (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.3, 0.5, 1.0)
   }
 
 }
