@@ -9,6 +9,7 @@ use crate::math::Vec3;
 pub mod light;
 pub mod object;
 //pub mod parser;
+pub mod material;
 
 pub struct AmbientLight {
   pub ratio: f64,

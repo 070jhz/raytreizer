@@ -5,6 +5,7 @@ mod camera;
 mod scene;
 mod framebuffer;
 mod utils;
+mod material;
 
 use minifb::{Key, Window, WindowOptions};
 use crate::math::Vec3;
@@ -33,16 +34,21 @@ fn main() {
     radius: 0.25,
   };
 
-  let cyl = Cylinder {
-    center: Point3::new(-0.7, 0.5, -1.0),
-    radius: 0.125,
-    height: 0.5,
-    orientation: Vec3::new(0.2, 0.0, -1.0).unit(),
+  let sp2 = Sphere {
+    center: Point3::new(0.0, -20.25, -5.0),
+    radius: 20.0,
   };
 
-  scene.add_object(Object::Sphere(sp));
-  scene.add_object(Object::Cylinder(cyl));
+  let cyl = Cylinder {
+    center: Point3::new(0.0, 0.0, -1.0),
+    radius: 0.125,
+    height: 0.5,
+    orientation: Vec3::new(1.0, 1.0, 0.25).unit(),
+  };
 
+  //scene.add_object(Object::Sphere(sp));
+  scene.add_object(Object::Cylinder(cyl));
+  scene.add_object(Object::Sphere(sp2));
   let camera = &scene.camera;
   
   // window setup
