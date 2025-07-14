@@ -21,7 +21,8 @@ impl Material for Solid {
       scatter_dir = -scatter_dir;
     }
     
-    Some( (Ray::new(rec.point, scatter_dir), self.albedo()) )
+    let offset_origin = rec.point + rec.normal * 1e-4;
+    Some( (Ray::new(offset_origin, scatter_dir), self.albedo()) )
     
   }
 }
