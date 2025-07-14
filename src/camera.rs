@@ -21,6 +21,7 @@ pub struct Camera {
   pub viewport        : Viewport,
   pub image_height    : usize,
   pub sampling_rate   : usize,
+  pub max_depth       : u32, // maximum ray bounces
 }
 
 impl Camera {
@@ -68,7 +69,8 @@ impl Camera {
       focal_length  : 1.0,
       viewport,
       image_height,
-      sampling_rate : 4, 
+      sampling_rate : 4,
+      max_depth: 5, 
     }
   }
 
