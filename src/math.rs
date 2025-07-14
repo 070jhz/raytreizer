@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
 
+use crate::utils::random_double_in;
+
 #[derive(Clone, Copy)]
 pub struct Vec3 {
   pub x: f64,
@@ -42,6 +44,20 @@ impl Vec3 {
 
   pub fn unit(&self) -> Vec3 {
     *self / self.length()
+  }
+
+  pub fn random_unit() -> Vec3 {
+    loop {
+      let v = Vec3::new(
+        random_double_in(-1.0, 1.0),
+        random_double_in(-1.0, 1.0),
+        random_double_in(-1.0, 1.0)
+      );
+
+      if v.length_squared() < 1.0 {
+        return v.unit();
+      }
+    }  
   }
 }
 

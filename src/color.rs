@@ -1,5 +1,6 @@
 use crate::math::Vec3;
 
+#[derive(Clone, Copy)]
 pub enum Color {
   Rgb(Vec3),
   Argb(f64, Vec3),
