@@ -7,12 +7,12 @@ pub trait Material {
 }
 
 pub struct Solid {
-  pub color: Color,
+  pub albedo: Color,
 }
 
 impl Material for Solid {
   fn albedo(&self) -> Color {
-      self.color
+      self.albedo
   }
   fn scatter(&self, _ray: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
     let mut scatter_dir = Vec3::random_unit_sphere();

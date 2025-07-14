@@ -1,15 +1,18 @@
 use std::f64;
+use std::sync::Arc;
 
 use crate::Vec3;
 use crate::Point3;
 use crate::Ray;
+use crate::scene::material::Material;
 
 const EPSILON: f64 = 1e-8;
 
-pub struct HitRecord {
-  pub t: f64,
-  pub point: Point3,
-  pub normal: Vec3,
+pub struct HitRecord<'a> {
+  pub t       : f64,
+  pub point   : Point3,
+  pub normal  : Vec3,
+  pub material: &'a dyn Material,
 }
 
 pub trait Hittable {
@@ -25,20 +28,25 @@ pub enum Object {
 }
 
 pub struct Sphere {
-  pub center: Point3,
-  pub radius: f64,
+  pub center  : Point3,
+  pub radius  : f64,
+  pub material: Arc<dyn Material + Send + Sync>,
 }
 
 pub struct Plane {
-  pub anchor: Point3,
-  pub normal: Vec3,
+  pub anchor  : Point3,
+  pub normal  : Vec3,
+  pub material: Arc<dyn Material + Sync + Send>,
 }
 
 pub struct Cylinder {
-  pub center      : Point3,
-  pub radius      : f64,
-  pub height      : f64,
-  pub orientation : Vec3,
+  pub center: Point3,
+  pub radius: f64,
+  pub height: f64,
+  pub orientation: Vec3,
+  pub body_material: Arc<dyn Material + Sync + Send>,
+  pub top_material: Arc<dyn Material + Sync + Send>,
+  pub bottom_material: Arc<dyn Material + Sync + Send>,
 }
 
 // intersection implementations
@@ -77,7 +85,12 @@ impl Hittable for Sphere {
       let point: Point3 = ray.at(t1);
       let normal = ((point - self.center) / self.radius).unit();
 
-      return Some(HitRecord { t: t1, point, normal });
+      return Some(HitRecord {
+        t: t1,
+        point,
+        normal,
+        material: self.material.as_ref(),
+      });
     }
 
     // if d == 0.0 equation yields the same root twice
@@ -87,7 +100,12 @@ impl Hittable for Sphere {
       let point : Point3 = ray.at(t2);
       let normal = ((point - self.center) / self.radius).unit();
 
-      return Some(HitRecord { t: t2, point, normal });
+      return Some(HitRecord {
+        t: t2,
+        point,
+        normal,
+        material: self.material.as_ref(),
+      });
     }
 
     None
@@ -110,7 +128,12 @@ impl Hittable for Plane {
     } else {
       let point : Point3 = ray.at(t);
 
-      Some(HitRecord { t, point, normal: self.normal })
+      Some(HitRecord {
+        t,
+        point,
+        normal: self.normal,
+        material: self.material.as_ref(),
+      })
     }
   }
 }
@@ -158,21 +181,29 @@ impl Hittable for Cylinder {
 
           if t < closest_t {
             closest_t = t;
-            closest_hit = Some(HitRecord { t, point, normal })
+            closest_hit = Some(HitRecord {
+              t,
+              point,
+              normal,
+              material: self.body_material.as_ref(),
+            })
           }
         }
       }
     }
 
     // check cylinder caps
+
     let top = Plane {
-      anchor: self.center + self.height * v,
-      normal: v,
+      anchor  : self.center + self.height * v,
+      normal  : v,
+      material: Arc::clone(&self.top_material),
     };
 
     let bottom = Plane {
-      anchor: self.center,
-      normal: -v,
+      anchor  : self.center,
+      normal  : -v,
+      material: Arc::clone(&self.bottom_material),
     };
 
     
@@ -185,6 +216,11 @@ impl Hittable for Cylinder {
             t      : hit.t,
             point  : hit.point,
             normal : plane.normal,
+            material: if plane.normal == v {
+              self.top_material.as_ref()
+            } else {
+              self.bottom_material.as_ref()
+            },
           }); 
         }
       }
