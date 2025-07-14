@@ -46,7 +46,7 @@ impl Vec3 {
     *self / self.length()
   }
 
-  pub fn random_unit() -> Vec3 {
+  pub fn random_unit_sphere() -> Vec3 {
     loop {
       let v = Vec3::new(
         random_double_in(-1.0, 1.0),
