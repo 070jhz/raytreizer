@@ -53,8 +53,8 @@ impl Vec3 {
         random_double_in(-1.0, 1.0),
         random_double_in(-1.0, 1.0)
       );
-
-      if v.length_squared() < 1.0 {
+      let lensq = v.length_squared();
+      if lensq < 1.0 && lensq > 1e-160 {
         return v.unit();
       }
     }  
