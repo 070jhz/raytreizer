@@ -1,6 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
-
 use crate::{color::Color, utils::random_double_in};
+
+pub const EPSILON: f64 = 1e-8;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Vec3 {
