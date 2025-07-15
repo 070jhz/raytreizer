@@ -70,7 +70,7 @@ impl Camera {
       viewport,
       image_height,
       sampling_rate : 4,
-      max_depth: 5, 
+      max_depth: 10, 
     }
   }
 
