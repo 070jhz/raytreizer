@@ -16,7 +16,7 @@ use crate::ray::Ray;
 use crate::camera::Camera;
 use crate::scene::{ Scene, AmbientLight, object::{ Object, Sphere, Cylinder, Plane } };
 
-use self::scene::material::Solid;
+use self::scene::material::{BasicMetal, Solid};
 
 fn main() {
   let mut scene = Scene::new(
@@ -33,50 +33,53 @@ fn main() {
   );  
 
   let sp = Sphere {
-    center: Point3::new(0.0, 0.0, -1.0),
-    radius: 0.25,
+    center: Point3::new(-1.1, 0.0, -2.5),
+    radius: 0.5,
     material: Arc::new( 
-      Solid {
-        albedo: Color::rgb(0.8, 0.3, 0.3),
+      BasicMetal {
+        albedo: Color::rgb(0.8, 0.8, 0.8),
+        fuzz: 0.05,
       }
     ),
   };
 
   let sp2 = Sphere {
-    center: Point3::new(0.0, -20.25, -5.0),
-    radius: 20.0,
+    center: Point3::new(1.1, 0.0, -2.5),
+    radius: 0.5,
     material: Arc::new(
-      Solid {
-        albedo: Color::rgb(0.1, 0.7, 0.2),
+      BasicMetal {
+        albedo: Color::rgb(0.8, 0.6, 0.2),
+        fuzz: 0.05,
       }
     ), 
   };
 
-  let cyl = Cylinder {
-    center: Point3::new(0.0, 0.0, -1.0),
-    radius: 0.125,
-    height: 0.5,
-    orientation: Vec3::new(1.0, 1.0, 0.25).unit(),
-    top_material: Arc::new(
-      Solid {
-        albedo: Color::rgb(0.3, 0.2, 0.8),
+  let sp3 = Sphere {
+    center: Point3::new(0.0, -100.5, -2.5),
+    radius: 100.0,
+    material: Arc::new(
+      BasicMetal {
+        albedo: Color::rgb(0.8, 0.8, 0.0),
+        fuzz: 0.05,
       }
     ),
-    bottom_material: Arc::new(
-      Solid {
-        albedo: Color::rgb(0.8, 0.4, 0.5),
-      }
-    ),
-    body_material: Arc::new(
-      Solid {
-        albedo: Color::rgb(0.5, 0.5, 0.5),
+  };
+ 
+  let sp4 = Sphere {
+    center: Point3::new(0.0, 0.0, -2.5),
+    radius: 0.5,
+    material: Arc::new(
+      BasicMetal {
+        albedo: Color::rgb(0.1, 0.2, 0.5),
+        fuzz: 0.5,
       }
     ),
   };
 
-  //scene.add_object(Object::Sphere(sp));
-  scene.add_object(Object::Cylinder(cyl));
+  scene.add_object(Object::Sphere(sp));
   scene.add_object(Object::Sphere(sp2));
+  scene.add_object(Object::Sphere(sp3));
+  scene.add_object(Object::Sphere(sp4));
   let camera = &scene.camera;
   
   // window setup
