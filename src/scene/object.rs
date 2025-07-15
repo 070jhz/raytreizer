@@ -4,9 +4,8 @@ use std::sync::Arc;
 use crate::Vec3;
 use crate::Point3;
 use crate::Ray;
+use crate::math::EPSILON;
 use crate::scene::material::Material;
-
-const EPSILON: f64 = 1e-8;
 
 pub struct HitRecord<'a> {
   pub t       : f64,
