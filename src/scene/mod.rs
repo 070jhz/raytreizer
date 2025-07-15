@@ -58,13 +58,15 @@ impl Scene {
           pixel_color += self.ray_color(&ray, self.camera.max_depth);
         }
 
-        buffer[(i, j)] = Color::Rgb(pixel_color / (self.camera.sampling_rate as f64)).gamma_correct(2.0).to_rgb_bytes();
+        buffer[(i, j)]= Color::Rgb(pixel_color / (self.camera.sampling_rate as f64))
+                        .gamma_correct(2.0)
+                        .to_rgb_bytes();
       }
     }
     buffer
   }
   
-  fn cast(&self,ray: &Ray) -> Option<HitRecord> {
+  fn cast(&self, ray: &Ray) -> Option<HitRecord> {
     let mut closest   : Option<HitRecord> = None;
     let mut closest_t = f64::INFINITY;
     
